@@ -5,10 +5,14 @@ import { WeatherDisplay } from '@/app/_components/weather-display';
 import { ForecastDisplay } from '@/app/_components/forecast-display';
 import { SearchBox } from '@/app/_components/search-box';
 import { ThemeToggle } from '@/app/_components/theme-toggle';
+import { ForecastSelector } from '@/app/_components/forecast-selector';
+
+type ForecastView = 'hourly' | '3day' | '5day';
 
 export default function Home() {
   const [city, setCity] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [forecastView, setForecastView] = useState<ForecastView>('hourly');
 
   const handleSearch = (searchCity: string) => {
     setCity(searchCity);
@@ -26,14 +30,19 @@ export default function Home() {
           Get real-time weather updates and forecasts for any city worldwide
         </p>
         <SearchBox onSearch={handleSearch} />
-        <div className="space-y-8 mt-12">
-          {isSearching && (
-            <>
-              <WeatherDisplay city={city} />
-              <ForecastDisplay city={city} />
-            </>
-          )}
-        </div>
+        {isSearching && (
+          <div className="space-y-8 mt-12">
+            <WeatherDisplay city={city} />
+            <ForecastSelector 
+              onSelect={setForecastView} 
+              currentView={forecastView} 
+            />
+            <ForecastDisplay 
+              city={city} 
+              view={forecastView}
+            />
+          </div>
+        )}
       </div>
     </main>
   );
