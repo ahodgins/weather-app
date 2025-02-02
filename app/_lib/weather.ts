@@ -1,4 +1,4 @@
-interface WeatherData {
+export interface WeatherData {
   main: {
     temp: number;
     feels_like: number;
@@ -17,7 +17,7 @@ interface WeatherData {
   name: string;
 }
 
-interface DailyForecast {
+export interface DailyForecast {
   dt: number;
   main: {
     temp: number;
@@ -35,7 +35,7 @@ interface DailyForecast {
   dt_txt: string;
 }
 
-interface ForecastData {
+export interface ForecastData {
   list: DailyForecast[];
   city: {
     name: string;
