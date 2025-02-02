@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getWeatherByCity } from '@/app/_lib/weather';
+import { getWeatherByCity, WeatherData } from '@/app/_lib/weather';
 
 interface WeatherDisplayProps {
   city: string;
 }
 
 export function WeatherDisplay({ city }: WeatherDisplayProps) {
-  const [weather, setWeather] = useState<any>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

@@ -4,6 +4,14 @@ interface City {
   state?: string;
 }
 
+interface CityApiResponse {
+  name: string;
+  country: string;
+  state?: string;
+  lat: number;
+  lon: number;
+}
+
 // Cache for storing recent queries
 const cityCache = new Map<string, City[]>();
 
@@ -42,7 +50,7 @@ export async function getCitySuggestions(query: string): Promise<City[]> {
     const data = await response.json();
     console.log('City data received:', data); // Debug log
 
-    const cities = data.map((city: any) => ({
+    const cities = data.map((city: CityApiResponse) => ({
       name: city.name,
       country: city.country,
       state: city.state
