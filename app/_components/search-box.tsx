@@ -49,9 +49,12 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
   };
 
   const handleSuggestionClick = (cityName: string) => {
+    // First hide suggestions and clear the array
+    setShowSuggestions(false);
+    setSuggestions([]);
+    // Then update input and trigger search
     setInput(cityName);
     onSearch(cityName);
-    setShowSuggestions(false);
   };
 
   return (
@@ -64,6 +67,13 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onBlur={() => {
+            // Use setTimeout to allow click events to fire first
+            setTimeout(() => {
+              setShowSuggestions(false);
+              setSuggestions([]);
+            }, 200);
+          }}
           placeholder="Enter city name..."
           className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 
                    border border-gray-100 dark:border-gray-700
