@@ -1,35 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getForecastByCity } from '@/app/_lib/weather';
+import { getForecastByCity, ForecastData, DailyForecast } from '@/app/_lib/weather';
 
 interface ForecastDisplayProps {
   city: string;
   view: 'hourly' | '3day' | '5day';
-}
-
-interface DailyForecast {
-  dt: number;
-  main: {
-    temp: number;
-    temp_min: number;
-    temp_max: number;
-    feels_like: number;
-    humidity: number;
-  };
-  weather: Array<{
-    description: string;
-    icon: string;
-    main: string;
-  }>;
-  rain?: {
-    "3h"?: number;
-  };
-  dt_txt: string;
-}
-
-interface ForecastData {
-  list: DailyForecast[];
 }
 
 export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
