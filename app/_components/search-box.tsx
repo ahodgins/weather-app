@@ -36,7 +36,7 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
       }
     };
 
-    const debounceTimer = setTimeout(fetchSuggestions, 150);
+    const debounceTimer = setTimeout(fetchSuggestions, 100);
     return () => clearTimeout(debounceTimer);
   }, [input]);
 

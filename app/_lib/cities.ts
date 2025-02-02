@@ -9,8 +9,12 @@ const cityCache = new Map<string, City[]>();
 
 export async function getCitySuggestions(query: string): Promise<City[]> {
   const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+  const GEO_URL = process.env.NEXT_PUBLIC_GEO_BASE_URL;
   
-  if (!query.trim() || !API_KEY) return [];
+  if (!query.trim() || !API_KEY || !GEO_URL) {
+    console.error('Missing API configuration');
+    return [];
+  }
 
   // Check cache first
   const cacheKey = query.toLowerCase();
@@ -19,8 +23,9 @@ export async function getCitySuggestions(query: string): Promise<City[]> {
   }
 
   try {
+    console.log('Fetching cities for:', query);
     const response = await fetch(
-      `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=10&appid=${API_KEY}`,
+      `${GEO_URL}/direct?q=${encodeURIComponent(query)}&limit=10&appid=${API_KEY}`,
       { 
         cache: 'no-store',
         headers: {
@@ -29,29 +34,28 @@ export async function getCitySuggestions(query: string): Promise<City[]> {
       }
     );
 
-    if (!response.ok) return [];
+    if (!response.ok) {
+      console.error('City API error:', response.status, response.statusText);
+      return [];
+    }
 
-    const data: Array<{
-      name: string;
-      country: string;
-      state?: string;
-      lat: number;
-      lon: number;
-    }> = await response.json();
+    const data = await response.json();
+    console.log('City data received:', data); // Debug log
 
-    const cities = data.map(city => ({
+    const cities = data.map((city: any) => ({
       name: city.name,
       country: city.country,
       state: city.state
     }));
 
-    // Store in cache
     cityCache.set(cacheKey, cities);
 
     // Clear old cache entries if cache gets too large
     if (cityCache.size > 100) {
       const firstKey = cityCache.keys().next().value;
-      cityCache.delete(firstKey);
+      if (firstKey) {
+        cityCache.delete(firstKey);
+      }
     }
 
     return cities;
