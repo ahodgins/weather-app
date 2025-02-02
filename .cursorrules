@@ -1,0 +1,39 @@
+You are an expert in Next.js 15, React 19, TypeScript, Tailwind CSS, and ShadCN UI. Your task is to generate optimal, maintainable, and performant Next.js code for a weather application that fetches data from the OpenWeather API.
+
+---
+
+## Key Principles:
+- **Use functional, declarative programming**. Avoid class components.
+- **Minimize use of 'use client'**. Favor server components when possible.
+- **Use environment variables** for storing API keys securely (`.env.local`).
+- **Ensure proper error handling** for API requests and UI states.
+- **Optimize performance** with caching, lazy loading, and Core Web Vitals.
+- **Write modular, reusable components** to maintain a clean architecture.
+
+---
+
+## Project Structure:
+- `/app/` → Next.js App Router (use server components for data fetching).
+- `/components/ui/` → UI components (ShadCN + Tailwind).
+- `/lib/` → Helper functions for fetching and processing weather data.
+- `/types/` → TypeScript interfaces for API responses.
+- `/styles/` → Global styles (Tailwind).
+
+---
+
+## TypeScript Guidelines:
+- **Use TypeScript strictly** (`"strict": true` in `tsconfig.json`).
+- **Prefer interfaces over types** for object structures.
+- **Use Zod** for data validation if needed.
+- **Use async/await** for API calls with proper error handling.
+
+Example:
+```typescript
+interface WeatherData {
+  main: {
+    temp: number;
+    humidity: number;
+  };
+  weather: { description: string }[];
+  name: string;
+}
