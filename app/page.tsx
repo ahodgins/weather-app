@@ -16,19 +16,24 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-4 sm:p-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-blue-950 transition-colors duration-200">
+    <main className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-100">
       <ThemeToggle />
-      <div className="max-w-4xl mx-auto space-y-8 pt-8">
-        <h1 className="text-4xl font-bold text-center text-blue-900 dark:text-blue-100 transition-colors duration-200">
-          Weather App
+      <div className="max-w-4xl mx-auto p-6 sm:p-8 space-y-8">
+        <h1 className="text-5xl font-bold text-center text-gray-900 dark:text-white">
+          Weather Forecast
         </h1>
+        <p className="text-center text-gray-500 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+          Get real-time weather updates and forecasts for any city worldwide
+        </p>
         <SearchBox onSearch={handleSearch} />
-        {isSearching && (
-          <>
-            <WeatherDisplay city={city} />
-            <ForecastDisplay city={city} />
-          </>
-        )}
+        <div className="space-y-8 mt-12">
+          {isSearching && (
+            <>
+              <WeatherDisplay city={city} />
+              <ForecastDisplay city={city} />
+            </>
+          )}
+        </div>
       </div>
     </main>
   );

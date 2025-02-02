@@ -86,28 +86,33 @@ export function ForecastDisplay({ city }: ForecastDisplayProps) {
 
   return (
     <div className="mt-8">
-      <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+      <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
         5-Day Forecast
       </h3>
       <div className="space-y-4">
         {Object.entries(dailyForecasts).map(([date, items]: [string, DailyForecast[]]) => (
-          <div key={date} className="p-4 backdrop-blur-lg bg-white/30 dark:bg-gray-800/30 rounded-xl">
-            <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div key={date} 
+            className="p-6 bg-white dark:bg-gray-900 rounded-3xl shadow-xl 
+                      border border-gray-100 dark:border-gray-800
+                      hover:shadow-2xl transition-all duration-300">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-4">
               {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </h4>
-            <div className="grid grid-cols-4 gap-4">
-              {items.map((item: DailyForecast) => (
-                <div key={item.dt} className="text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {items.map((item) => (
+                <div key={item.dt} 
+                  className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                            border border-gray-100 dark:border-gray-700">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                     {new Date(item.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric' })}
                   </p>
-                  <p className="font-medium text-gray-800 dark:text-gray-200">
+                  <p className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
                     {Math.round(item.main.temp)}°C
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                     {item.rain?.["3h"] ? `${item.rain["3h"]}mm` : "0mm"}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
                     {item.weather[0].description}
                   </p>
                 </div>

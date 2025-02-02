@@ -54,13 +54,14 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
   }
 
   return (
-    <div className="p-8 backdrop-blur-lg bg-white/30 dark:bg-gray-800/30 rounded-2xl shadow-lg
-                    transition-all duration-200 hover:shadow-xl">
-      <h2 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
+    <div className="p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl 
+                  border border-gray-100 dark:border-gray-800
+                  hover:shadow-2xl transition-all duration-300">
+      <h2 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-white">
         {weather.name}
       </h2>
       <div className="text-center mb-8">
-        <p className="text-6xl font-bold mb-4 text-blue-600 dark:text-blue-400">
+        <p className="text-6xl font-bold mb-4 text-gray-900 dark:text-white">
           {Math.round(weather.main.temp)}°C
         </p>
         <p className="text-xl capitalize text-gray-600 dark:text-gray-300">
@@ -68,15 +69,17 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
         </p>
       </div>
       <div className="grid grid-cols-2 gap-6">
-        <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
+        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                      border border-gray-100 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400 mb-1">Feels like</p>
-          <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
             {Math.round(weather.main.feels_like)}°C
           </p>
         </div>
-        <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
+        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                      border border-gray-100 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400 mb-1">Humidity</p>
-          <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
             {weather.main.humidity}%
           </p>
         </div>
