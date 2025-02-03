@@ -17,6 +17,12 @@ import {
   WiNightAltCloudy,
 } from 'react-icons/wi';
 
+type ForecastItem = {
+  temp: number;
+  condition: string;
+  description: string;
+} & ({ time: string } | { day: string });
+
 interface ForecastDisplayProps {
   city: {
     name: string;
