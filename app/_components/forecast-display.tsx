@@ -142,7 +142,13 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
             </p>
             <p className="text-gray-500 dark:text-gray-400 flex justify-between">
               <span>Wind</span>
-              <span>{Math.round(item.wind.speed)}m/s {getWindDirection(item.wind.deg)}</span>
+              <span>
+                {item.wind?.speed ? (
+                  <>
+                    {Math.round(item.wind.speed)}m/s {getWindDirection(item.wind.deg)}
+                  </>
+                ) : 'N/A'}
+              </span>
             </p>
           </div>
         </div>
@@ -242,11 +248,15 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
 
                 {/* Wind */}
                 <div className="text-center">
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    {Math.round(maxWind)}m/s
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {getWindDirection(items[0].wind.deg)}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 flex justify-between">
+                    <span>Wind</span>
+                    <span>
+                      {items[0].wind?.speed ? (
+                        <>
+                          {Math.round(maxWind)}m/s {getWindDirection(items[0].wind.deg)}
+                        </>
+                      ) : 'N/A'}
+                    </span>
                   </p>
                 </div>
               </div>

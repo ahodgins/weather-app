@@ -25,12 +25,18 @@ export interface DailyForecast {
     temp_max: number;
     feels_like: number;
     humidity: number;
+    pressure: number;
   };
   weather: Array<{
+    id: number;
+    main: string;
     description: string;
     icon: string;
-    main: string;
   }>;
+  wind: {
+    speed: number;
+    deg: number;
+  };
   rain?: {
     "1h"?: number;
     "3h"?: number;
