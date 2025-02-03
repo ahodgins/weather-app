@@ -21,6 +21,7 @@ type ForecastItem = {
   temp: number;
   condition: string;
   description: string;
+  precipitation?: string;
 } & ({ time: string } | { day: string });
 
 interface ForecastDisplayProps {
@@ -98,16 +99,36 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
     });
   };
 
-  const getHourlyForecast = () => {
-    return forecast.list.slice(0, 8).map((item) => ({
-      time: formatTime(item.dt),
-      temp: Math.round(convertTemp(item.main.temp)),
-      condition: item.weather[0].main,
-      description: item.weather[0].description,
-    }));
+  const getPrecipitation = (item: any): string | undefined => {
+    const rain = item.rain?.['1h'] || item.rain?.['3h'];
+    const snow = item.snow?.['1h'] || item.snow?.['3h'];
+    
+    if (rain || snow) {
+      const amount = (rain || snow) / 10; // Convert to cm
+      return `${amount.toFixed(2)} cm`;
+    }
+    return undefined;
   };
 
-  const getDailyForecast = (days: number) => {
+  const getHourlyForecast = (): ForecastItem[] => {
+    return forecast.list.slice(0, 8).map((item) => {
+      const precip = getPrecipitation(item);
+      console.log('Forecast item:', { 
+        time: formatTime(item.dt), 
+        precipitation: precip 
+      });
+      
+      return {
+        time: formatTime(item.dt),
+        temp: Math.round(convertTemp(item.main.temp)),
+        condition: item.weather[0].main,
+        description: item.weather[0].description,
+        precipitation: precip,
+      };
+    });
+  };
+
+  const getDailyForecast = (days: number): ForecastItem[] => {
     const dailyData = forecast.list.filter((item, index) => index % 8 === 0).slice(0, days);
     return dailyData.map((item) => ({
       day: formatDay(item.dt),
@@ -133,19 +154,28 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
           <div 
             key={index}
             className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl
-                     border border-gray-100 dark:border-gray-700 space-y-3"
+                       border border-gray-100 dark:border-gray-700 h-[180px]"
           >
             <div className="text-sm font-medium text-gray-500 dark:text-gray-400 w-full text-center">
               {view === 'hourly' ? item.time : item.day}
             </div>
-            <div className="text-gray-600 dark:text-gray-300">
-              {getWeatherIcon(item.condition)}
+            <div className="flex-1 flex flex-col items-center justify-center gap-2">
+              <div className="text-gray-600 dark:text-gray-300">
+                {getWeatherIcon(item.condition)}
+              </div>
+              <div className="text-xl font-bold text-gray-900 dark:text-white">
+                {item.temp}°{unit}
+              </div>
             </div>
-            <div className="text-xl font-bold text-gray-900 dark:text-white">
-              {item.temp}°{unit}
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 text-center capitalize w-full">
-              {item.description}
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 dark:text-gray-400 text-center capitalize">
+                {item.description}
+              </div>
+              {item.precipitation && (
+                <div className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                  {item.precipitation}
+                </div>
+              )}
             </div>
           </div>
         ))}
