@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Head from 'next/head';
 import { WeatherDisplay } from '@/app/_components/weather-display';
 import { ForecastDisplay } from '@/app/_components/forecast-display';
 import { SearchBox } from '@/app/_components/search-box';
@@ -18,16 +19,17 @@ interface Location {
 
 export default function Home() {
   const [location, setLocation] = useState<Location | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
   const [forecastView, setForecastView] = useState<ForecastView>('hourly');
 
   const handleSearch = (searchLocation: Location) => {
     setLocation(searchLocation);
-    setIsSearching(true);
   };
 
   return (
     <TemperatureProvider>
+      <Head>
+        <title>{location ? `${location.name}, ${location.state || ''} ${location.country}` : 'Weather Forecast'}</title>
+      </Head>
       <main className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-100">
         <ThemeToggle />
         <div className="max-w-4xl mx-auto p-6 sm:p-8 space-y-8">
@@ -38,7 +40,7 @@ export default function Home() {
             Get real-time weather updates and forecasts for any city worldwide
           </p>
           <SearchBox onSearch={handleSearch} />
-          {isSearching && location && (
+          {location && (
             <div className="space-y-8 mt-12">
               <WeatherDisplay city={location} />
               <ForecastSelector 
