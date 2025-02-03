@@ -17,12 +17,29 @@ import {
   WiNightAltCloudy,
 } from 'react-icons/wi';
 
-type ForecastItem = {
+type BaseForecastItem = {
   temp: number;
   condition: string;
   description: string;
   precipitation?: string;
-} & ({ time: string } | { day: string });
+};
+
+type HourlyItem = BaseForecastItem & {
+  type: 'hourly';
+  time: string;
+};
+
+type DailyItem = BaseForecastItem & {
+  type: 'daily';
+  day: string;
+};
+
+type ForecastItem = HourlyItem | DailyItem;
+
+// Add type guard
+function isHourlyItem(item: ForecastItem): item is HourlyItem {
+  return item.type === 'hourly';
+}
 
 interface ForecastDisplayProps {
   city: {
@@ -131,30 +148,25 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
   };
 
   const getHourlyForecast = (): ForecastItem[] => {
-    return forecast.list.slice(0, 8).map((item) => {
-      const precip = getPrecipitation(item);
-      console.log('Forecast item:', { 
-        time: formatTime(item.dt), 
-        precipitation: precip 
-      });
-      
-      return {
-        time: formatTime(item.dt),
-        temp: Math.round(convertTemp(item.main.temp)),
-        condition: item.weather[0].main,
-        description: item.weather[0].description,
-        precipitation: precip,
-      };
-    });
+    return forecast.list.slice(0, 8).map((item) => ({
+      type: 'hourly',
+      time: formatTime(item.dt),
+      temp: Math.round(convertTemp(item.main.temp)),
+      condition: item.weather[0].main,
+      description: item.weather[0].description,
+      precipitation: getPrecipitation(item),
+    }));
   };
 
   const getDailyForecast = (days: number): ForecastItem[] => {
     const dailyData = forecast.list.filter((item, index) => index % 8 === 0).slice(0, days);
     return dailyData.map((item) => ({
+      type: 'daily',
       day: formatDay(item.dt),
       temp: Math.round(convertTemp(item.main.temp)),
       condition: item.weather[0].main,
       description: item.weather[0].description,
+      precipitation: getPrecipitation(item),
     }));
   };
 
@@ -177,7 +189,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
                        border border-gray-100 dark:border-gray-700 h-[180px]"
           >
             <div className="text-sm font-medium text-gray-500 dark:text-gray-400 w-full text-center">
-              {view === 'hourly' ? item.time : item.day}
+              {isHourlyItem(item) ? item.time : item.day}
             </div>
             <div className="flex-1 flex flex-col items-center justify-center gap-2">
               <div className="text-gray-600 dark:text-gray-300">
