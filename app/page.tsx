@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/app/_components/theme-toggle';
 import { ForecastSelector } from '@/app/_components/forecast-selector';
 import { TemperatureProvider } from '@/app/_contexts/temperature-context';
 
-type ForecastView = 'hourly' | '3day' | '5day';
+type ForecastView = 'hourly' | '5day';
 
 interface Location {
   name: string;

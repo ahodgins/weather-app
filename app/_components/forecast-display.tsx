@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getForecastByCity, ForecastData, DailyForecast } from '@/app/_lib/weather';
+import { getForecastByCity, ForecastData } from '@/app/_lib/weather';
 import { useTemperature } from '@/app/_contexts/temperature-context';
 import { LoadingSpinner } from './ui/loading-spinner';
 import { ErrorDisplay } from './ui/error-display';
@@ -29,7 +29,7 @@ interface ForecastDisplayProps {
     name: string;
     country: string;
   };
-  view: 'hourly' | '3day' | '5day';
+  view: 'hourly' | '5day';
 }
 
 interface ForecastItemData {
@@ -157,12 +157,12 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
     }));
   };
 
-  const forecastData = view === 'hourly' ? getHourlyForecast() : getDailyForecast(view === '3day' ? 3 : 5);
+  const forecastData = view === 'hourly' ? getHourlyForecast() : getDailyForecast(5);
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 p-6">
       <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-        {view === 'hourly' ? 'Hourly' : `${view === '3day' ? '3-Day' : '5-Day'}`} Forecast
+        {view === 'hourly' ? 'Hourly' : '5-Day'} Forecast
       </h2>
       <div className={`grid gap-4 ${
         view === 'hourly' 
