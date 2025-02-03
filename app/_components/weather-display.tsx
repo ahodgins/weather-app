@@ -11,7 +11,14 @@ import {
   WiThunderstorm, 
   WiFog,
   WiDayCloudy,
-  WiNightAltCloudy
+  WiNightAltCloudy,
+  WiThermometer,
+  WiStrongWind,
+  WiHumidity,
+  WiSunrise,
+  WiSunset,
+  WiRaindrop,
+  WiWindDeg
 } from 'react-icons/wi';
 import { useTemperature } from '@/app/_contexts/temperature-context';
 import { TemperatureToggle } from './temperature-toggle';
@@ -121,22 +128,91 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
           {weather.weather[0].description}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
                       border border-gray-100 dark:border-gray-700">
-          <p className="text-gray-500 dark:text-gray-400 mb-1">Feels like</p>
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
+            <WiThermometer className="w-6 h-6" />
+            <p>Feels like</p>
+          </div>
           <p className="text-2xl font-semibold text-gray-900 dark:text-white">
             {Math.round(convertTemp(weather.main.feels_like))}°{unit}
           </p>
         </div>
         <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
                       border border-gray-100 dark:border-gray-700">
-          <p className="text-gray-500 dark:text-gray-400 mb-1">Humidity</p>
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
+            <WiStrongWind className="w-6 h-6" />
+            <p>Wind</p>
+          </div>
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+            {Math.round(weather.wind.speed)} m/s
+          </p>
+          <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <WiWindDeg className="w-4 h-4" 
+              style={{ transform: `rotate(${weather.wind.deg}deg)` }}
+            />
+            <span>{getWindDirection(weather.wind.deg)}</span>
+          </div>
+        </div>
+        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                      border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
+            <WiHumidity className="w-6 h-6" />
+            <p>Humidity</p>
+          </div>
           <p className="text-2xl font-semibold text-gray-900 dark:text-white">
             {weather.main.humidity}%
+          </p>
+        </div>
+        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                      border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
+            <WiRaindrop className="w-6 h-6" />
+            <p>Visibility</p>
+          </div>
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+            {(weather.visibility / 1000).toFixed(1)} km
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                      border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
+            <WiSunrise className="w-6 h-6" />
+            <p>Sunrise</p>
+          </div>
+          <p className="text-xl font-semibold text-gray-900 dark:text-white">
+            {new Date(weather.sys.sunrise * 1000).toLocaleTimeString('en-US', { 
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            })}
+          </p>
+        </div>
+        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                      border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
+            <WiSunset className="w-6 h-6" />
+            <p>Sunset</p>
+          </div>
+          <p className="text-xl font-semibold text-gray-900 dark:text-white">
+            {new Date(weather.sys.sunset * 1000).toLocaleTimeString('en-US', { 
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            })}
           </p>
         </div>
       </div>
     </div>
   );
+}
+
+function getWindDirection(degrees: number): string {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                     'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(((degrees % 360) / 22.5));
+  return directions[index % 16];
 } 
