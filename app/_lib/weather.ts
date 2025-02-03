@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Define strict schemas for API responses
-const WeatherSchema = z.object({
+const weatherSchema = z.object({
   name: z.string(),
   main: z.object({
     temp: z.number(),
@@ -30,7 +30,7 @@ const WeatherSchema = z.object({
   }).optional(),
 });
 
-const ForecastSchema = z.object({
+const forecastSchema = z.object({
   list: z.array(z.object({
     dt: z.number(),
     main: z.object({
@@ -65,9 +65,10 @@ const ForecastSchema = z.object({
   }),
 });
 
-export type WeatherData = z.infer<typeof WeatherSchema>;
-export type ForecastData = z.infer<typeof ForecastSchema>;
-export type DailyForecast = z.infer<typeof ForecastSchema>['list'][number];
+// Infer types from schemas
+export type WeatherData = z.infer<typeof weatherSchema>;
+export type ForecastData = z.infer<typeof forecastSchema>;
+export type DailyForecast = z.infer<typeof forecastSchema>['list'][number];
 
 // Constants
 const API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
@@ -81,21 +82,32 @@ const UNITS = 'metric';
  * @throws Error if the API request fails or returns invalid data
  */
 export async function getWeatherByCity(cityName: string, countryCode?: string): Promise<WeatherData> {
-  const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
-  const baseUrl = process.env.NEXT_PUBLIC_WEATHER_BASE_URL;
-  
-  // Add country code to query if provided
-  const query = countryCode ? `${cityName},${countryCode}` : cityName;
-  
-  const response = await fetch(
-    `${baseUrl}/weather?q=${query}&units=metric&appid=${apiKey}`
-  );
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch weather data');
+  if (!process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY) {
+    throw new Error('OpenWeather API key is not configured');
   }
 
-  return response.json();
+  const query = countryCode ? `${cityName},${countryCode}` : cityName;
+  const params = new URLSearchParams({
+    q: query,
+    units: 'metric',
+    appid: process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY,
+  });
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_WEATHER_BASE_URL}/weather?${params}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Weather API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return weatherSchema.parse(data);
+  } catch (error) {
+    console.error('Failed to fetch weather data:', error);
+    throw new Error('Failed to fetch weather data');
+  }
 }
 
 /**
@@ -106,19 +118,30 @@ export async function getWeatherByCity(cityName: string, countryCode?: string): 
  * @throws Error if the API request fails or returns invalid data
  */
 export async function getForecastByCity(cityName: string, countryCode?: string): Promise<ForecastData> {
-  const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
-  const baseUrl = process.env.NEXT_PUBLIC_WEATHER_BASE_URL;
-  
-  // Add country code to query if provided
-  const query = countryCode ? `${cityName},${countryCode}` : cityName;
-
-  const response = await fetch(
-    `${baseUrl}/forecast?q=${query}&units=metric&appid=${apiKey}`
-  );
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch forecast data');
+  if (!process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY) {
+    throw new Error('OpenWeather API key is not configured');
   }
 
-  return response.json();
+  const query = countryCode ? `${cityName},${countryCode}` : cityName;
+  const params = new URLSearchParams({
+    q: query,
+    units: 'metric',
+    appid: process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY,
+  });
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_WEATHER_BASE_URL}/forecast?${params}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Forecast API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return forecastSchema.parse(data);
+  } catch (error) {
+    console.error('Failed to fetch forecast data:', error);
+    throw new Error('Failed to fetch forecast data');
+  }
 } 
