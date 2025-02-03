@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { getForecastByCity, ForecastData, DailyForecast } from '@/app/_lib/weather';
 import { 
   WiDaySunny, 
@@ -14,6 +14,8 @@ import {
   WiNightAltCloudy
 } from 'react-icons/wi';
 import { useTemperature } from '@/app/_contexts/temperature-context';
+import { LoadingSpinner } from '@/app/_components/ui/loading-spinner';
+import { ErrorDisplay } from '@/app/_components/ui/error-display';
 
 interface ForecastDisplayProps {
   city: string;
@@ -57,36 +59,153 @@ const getWeatherIcon = (condition: string, isDay: boolean = true, size: "sm" | "
   }
 };
 
+interface ForecastCardProps {
+  forecast: ForecastData;
+  unit: string;
+}
+
+const ForecastCard = memo(({ forecast, unit }: ForecastCardProps) => {
+  // Component logic here
+});
+
 export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
   const { convertTemp, unit } = useTemperature();
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const processDailyForecast = useMemo(() => {
+    if (!forecast) return [];
+
+    const dailyData: { [key: string]: DailyForecast[] } = {};
+    
+    forecast.list.forEach(item => {
+      const date = new Date(item.dt * 1000).toLocaleDateString();
+      if (!dailyData[date]) {
+        dailyData[date] = [];
+      }
+      dailyData[date].push(item);
+    });
+
+    return Object.entries(dailyData)
+      .slice(0, view === '3day' ? 3 : 5)
+      .map(([date, items]) => {
+        const minTemp = Math.min(...items.map(item => item.main.temp));
+        const maxTemp = Math.max(...items.map(item => item.main.temp));
+        const avgHumidity = Math.round(items.reduce((acc, item) => acc + item.main.humidity, 0) / items.length);
+        const maxWind = Math.max(...items.map(item => item.wind?.speed || 0));
+        const totalPrecip = items.reduce((acc, item) => {
+          const rainAmount = (item.rain?.["1h"] || item.rain?.["3h"] || 0);
+          const snowAmount = (item.snow?.["1h"] || item.snow?.["3h"] || 0);
+          return acc + rainAmount + snowAmount;
+        }, 0) / 10; // Convert to cm
+        const mostFrequentWeather = items[Math.floor(items.length / 2)].weather[0];
+
+        return (
+          <div 
+            key={date}
+            className="grid grid-cols-7 items-center p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
+                       border border-gray-100 dark:border-gray-700 gap-2"
+          >
+            {/* Date and Icon */}
+            <div className="col-span-2 flex items-center gap-3">
+              <div className="text-gray-600 dark:text-gray-300">
+                {getWeatherIcon(mostFrequentWeather.main, true, "sm")}
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+            </div>
+
+            {/* Temperature */}
+            <div className="text-center">
+              <p className="font-semibold text-gray-900 dark:text-white">
+                {Math.round(convertTemp(maxTemp))}°
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {Math.round(convertTemp(minTemp))}°
+              </p>
+            </div>
+
+            {/* Weather Description */}
+            <div className="text-center">
+              <p className="text-sm text-gray-900 dark:text-white capitalize">
+                {mostFrequentWeather.description}
+              </p>
+            </div>
+
+            {/* Precipitation */}
+            <div className="text-center">
+              <p className="text-sm text-gray-900 dark:text-white">
+                {totalPrecip > 0 ? `${totalPrecip.toFixed(1)}cm` : "0cm"}
+              </p>
+            </div>
+
+            {/* Humidity */}
+            <div className="text-center">
+              <p className="text-sm text-gray-900 dark:text-white">
+                {avgHumidity}%
+              </p>
+            </div>
+
+            {/* Wind */}
+            <div className="text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400 flex justify-between">
+                <span>Wind</span>
+                <span>
+                  {items[0].wind?.speed ? (
+                    <>
+                      {Math.round(maxWind)}m/s {getWindDirection(items[0].wind.deg)}
+                    </>
+                  ) : 'N/A'}
+                </span>
+              </p>
+            </div>
+          </div>
+        );
+      });
+  }, [forecast, view, unit, convertTemp]);
+
   useEffect(() => {
+    let mounted = true;
+
     async function fetchForecast() {
+      if (!city) return;
+
       try {
         setLoading(true);
         setError(null);
         const data = await getForecastByCity(city);
-        setForecast(data);
+        if (mounted) {
+          setForecast(data);
+        }
       } catch (err) {
-        setError('Failed to load forecast data');
-        console.error(err);
+        if (mounted) {
+          setError('Failed to load forecast data');
+          console.error('Forecast fetch error:', err);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
-    if (city) {
-      fetchForecast();
-    }
+    fetchForecast();
+
+    return () => {
+      mounted = false;
+    };
   }, [city]);
 
-  if (loading || !forecast) return null;
-  if (error) return <div className="text-red-500">{error}</div>;
-
   const processHourlyForecast = () => {
+    if (!forecast) return [];
+    
     const next24Hours = forecast.list.slice(0, 8);
     return next24Hours.map(item => {
       const precipitation = (
@@ -156,128 +275,40 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
     });
   };
 
-  const processDailyForecast = (days: number) => {
-    const dailyData: { [key: string]: DailyForecast[] } = {};
-    
-    forecast.list.forEach(item => {
-      const date = new Date(item.dt * 1000).toLocaleDateString();
-      if (!dailyData[date]) {
-        dailyData[date] = [];
-      }
-      dailyData[date].push(item);
-    });
-
-    return (
-      <div className="space-y-4">
-        {/* Headers */}
-        <div className="grid grid-cols-7 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-          <div className="col-span-2">Date</div>
-          <div className="text-center">High/Low</div>
-          <div className="text-center">Conditions</div>
-          <div className="text-center">Precip</div>
-          <div className="text-center">Humidity</div>
-          <div className="text-center">Wind</div>
-        </div>
-
-        {/* Daily Rows */}
-        {Object.entries(dailyData)
-          .slice(0, days)
-          .map(([date, items]) => {
-            const minTemp = Math.min(...items.map(item => item.main.temp));
-            const maxTemp = Math.max(...items.map(item => item.main.temp));
-            const avgHumidity = Math.round(items.reduce((acc, item) => acc + item.main.humidity, 0) / items.length);
-            const maxWind = Math.max(...items.map(item => item.wind.speed));
-            const totalPrecip = items.reduce((acc, item) => {
-              const rainAmount = (item.rain?.["1h"] || item.rain?.["3h"] || 0);
-              const snowAmount = (item.snow?.["1h"] || item.snow?.["3h"] || 0);
-              return acc + rainAmount + snowAmount;
-            }, 0) / 10;
-            const mostFrequentWeather = items[Math.floor(items.length / 2)].weather[0];
-
-            return (
-              <div 
-                key={date}
-                className="grid grid-cols-7 items-center p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
-                           border border-gray-100 dark:border-gray-700 gap-2"
-              >
-                {/* Date and Icon */}
-                <div className="col-span-2 flex items-center gap-3">
-                  <div className="text-gray-600 dark:text-gray-300">
-                    {getWeatherIcon(mostFrequentWeather.main, true, "sm")}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Temperature */}
-                <div className="text-center">
-                  <p className="font-semibold text-gray-900 dark:text-white">
-                    {Math.round(convertTemp(maxTemp))}°
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {Math.round(convertTemp(minTemp))}°
-                  </p>
-                </div>
-
-                {/* Weather Description */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-900 dark:text-white capitalize">
-                    {mostFrequentWeather.description}
-                  </p>
-                </div>
-
-                {/* Precipitation */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    {totalPrecip > 0 ? `${totalPrecip.toFixed(1)}cm` : "0cm"}
-                  </p>
-                </div>
-
-                {/* Humidity */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    {avgHumidity}%
-                  </p>
-                </div>
-
-                {/* Wind */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 flex justify-between">
-                    <span>Wind</span>
-                    <span>
-                      {items[0].wind?.speed ? (
-                        <>
-                          {Math.round(maxWind)}m/s {getWindDirection(items[0].wind.deg)}
-                        </>
-                      ) : 'N/A'}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-      </div>
-    );
-  };
-
   const renderForecast = () => {
+    if (!forecast) return null;
+
     switch (view) {
       case 'hourly':
         return processHourlyForecast();
       case '3day':
-        return processDailyForecast(3);
       case '5day':
-        return processDailyForecast(5);
+        return (
+          <div className="space-y-4">
+            {/* Headers */}
+            <div className="grid grid-cols-7 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">
+              <div className="col-span-2">Date</div>
+              <div className="text-center">High/Low</div>
+              <div className="text-center">Conditions</div>
+              <div className="text-center">Precip</div>
+              <div className="text-center">Humidity</div>
+              <div className="text-center">Wind</div>
+            </div>
+            {processDailyForecast}
+          </div>
+        );
       default:
         return null;
     }
   };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <ErrorDisplay message={error} />;
+  }
 
   return (
     <div className="mt-8">

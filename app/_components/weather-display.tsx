@@ -23,9 +23,28 @@ import {
 import { useTemperature } from '@/app/_contexts/temperature-context';
 import { TemperatureToggle } from './temperature-toggle';
 
+interface WeatherCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: React.ReactNode;
+  subValue?: React.ReactNode;
+}
+
 interface WeatherDisplayProps {
   city: string;
 }
+
+const HOUR_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+};
+
+const ICON_SIZES = {
+  sm: "w-8 h-8",
+  md: "w-12 h-12",
+  lg: "w-20 h-20",
+} as const;
 
 const getWeatherIcon = (condition: string, isDay: boolean = true, size: "sm" | "md" | "lg" = "md") => {
   const sizeClasses = {
@@ -57,6 +76,19 @@ const getWeatherIcon = (condition: string, isDay: boolean = true, size: "sm" | "
   }
 };
 
+const WeatherCard = ({ icon, title, value, subValue }: WeatherCardProps) => (
+  <div className={`p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700`}>
+    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
+      {icon}
+      <p>{title}</p>
+    </div>
+    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+      {value}
+    </p>
+    {subValue}
+  </div>
+);
+
 export function WeatherDisplay({ city }: WeatherDisplayProps) {
   const { convertTemp, unit } = useTemperature();
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -64,23 +96,35 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
     async function fetchWeather() {
+      if (!city) return;
+
       try {
         setLoading(true);
         setError(null);
         const data = await getWeatherByCity(city);
-        setWeather(data);
+        if (mounted) {
+          setWeather(data);
+        }
       } catch (err) {
-        setError('Failed to load weather data');
-        console.error(err);
+        if (mounted) {
+          setError('Failed to load weather data');
+          console.error('Weather fetch error:', err);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
-    if (city) {
-      fetchWeather();
-    }
+    fetchWeather();
+
+    return () => {
+      mounted = false;
+    };
   }, [city]);
 
   if (loading) {
@@ -108,9 +152,7 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
   const isDay = hour >= 6 && hour < 18;
 
   return (
-    <div className="p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl 
-                  border border-gray-100 dark:border-gray-800
-                  hover:shadow-2xl transition-all duration-300">
+    <div className="p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 hover:shadow-2xl transition-all duration-300">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
           {weather.name}
@@ -129,82 +171,49 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
         </p>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
-                      border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
-            <WiThermometer className="w-6 h-6" />
-            <p>Feels like</p>
-          </div>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {Math.round(convertTemp(weather.main.feels_like))}°{unit}
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
-                      border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
-            <WiStrongWind className="w-6 h-6" />
-            <p>Wind</p>
-          </div>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {Math.round(weather.wind.speed)} m/s
-          </p>
-          <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
-            <WiWindDeg className="w-4 h-4" 
-              style={{ transform: `rotate(${weather.wind.deg}deg)` }}
-            />
-            <span>{getWindDirection(weather.wind.deg)}</span>
-          </div>
-        </div>
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
-                      border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
-            <WiHumidity className="w-6 h-6" />
-            <p>Humidity</p>
-          </div>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {weather.main.humidity}%
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
-                      border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
-            <WiRaindrop className="w-6 h-6" />
-            <p>Visibility</p>
-          </div>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {(weather.visibility / 1000).toFixed(1)} km
-          </p>
-        </div>
+        <WeatherCard
+          icon={<WiThermometer className="w-6 h-6" />}
+          title="Feels like"
+          value={`${Math.round(convertTemp(weather.main.feels_like))}°${unit}`}
+        />
+        <WeatherCard
+          icon={<WiStrongWind className="w-6 h-6" />}
+          title="Wind"
+          value={weather.wind?.speed ? `${Math.round(weather.wind.speed)} m/s` : 'N/A'}
+          subValue={weather.wind?.deg && (
+            <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <WiWindDeg className="w-4 h-4" 
+                style={{ transform: `rotate(${weather.wind.deg}deg)` }}
+              />
+              <span>{getWindDirection(weather.wind.deg)}</span>
+            </div>
+          )}
+        />
+        <WeatherCard
+          icon={<WiHumidity className="w-6 h-6" />}
+          title="Humidity"
+          value={`${weather.main.humidity}%`}
+        />
+        <WeatherCard
+          icon={<WiRaindrop className="w-6 h-6" />}
+          title="Visibility"
+          value={weather.visibility 
+            ? `${(weather.visibility / 1000).toFixed(1)} km`
+            : 'N/A'
+          }
+        />
       </div>
       <div className="grid grid-cols-2 gap-4 mt-4">
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
-                      border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
-            <WiSunrise className="w-6 h-6" />
-            <p>Sunrise</p>
-          </div>
-          <p className="text-xl font-semibold text-gray-900 dark:text-white">
-            {new Date(weather.sys.sunrise * 1000).toLocaleTimeString('en-US', { 
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            })}
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800
-                      border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
-            <WiSunset className="w-6 h-6" />
-            <p>Sunset</p>
-          </div>
-          <p className="text-xl font-semibold text-gray-900 dark:text-white">
-            {new Date(weather.sys.sunset * 1000).toLocaleTimeString('en-US', { 
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            })}
-          </p>
-        </div>
+        <WeatherCard
+          icon={<WiSunrise className="w-6 h-6" />}
+          title="Sunrise"
+          value={new Date(weather.sys.sunrise * 1000).toLocaleTimeString('en-US', HOUR_FORMAT_OPTIONS)}
+        />
+        <WeatherCard
+          icon={<WiSunset className="w-6 h-6" />}
+          title="Sunset"
+          value={new Date(weather.sys.sunset * 1000).toLocaleTimeString('en-US', HOUR_FORMAT_OPTIONS)}
+        />
       </div>
     </div>
   );
