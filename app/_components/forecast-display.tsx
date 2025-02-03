@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getForecastByCity, ForecastData } from '@/app/_lib/weather';
+import { getForecastByCity, ForecastData, DailyForecast } from '@/app/_lib/weather';
 import { useTemperature } from '@/app/_contexts/temperature-context';
 import { LoadingSpinner } from './ui/loading-spinner';
 import { ErrorDisplay } from './ui/error-display';
@@ -30,6 +30,25 @@ interface ForecastDisplayProps {
     country: string;
   };
   view: 'hourly' | '3day' | '5day';
+}
+
+interface ForecastItemData {
+  dt: number;
+  main: {
+    temp: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+  }>;
+  rain?: {
+    '1h'?: number;
+    '3h'?: number;
+  };
+  snow?: {
+    '1h'?: number;
+    '3h'?: number;
+  };
 }
 
 const getWeatherIcon = (condition: string, isDay: boolean = true) => {
@@ -99,7 +118,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
     });
   };
 
-  const getPrecipitation = (item: any): string | undefined => {
+  const getPrecipitation = (item: ForecastItemData): string | undefined => {
     const rain = item.rain?.['1h'] || item.rain?.['3h'];
     const snow = item.snow?.['1h'] || item.snow?.['3h'];
     
