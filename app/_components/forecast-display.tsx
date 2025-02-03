@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, memo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getForecastByCity, ForecastData, DailyForecast } from '@/app/_lib/weather';
 import { 
   WiDaySunny, 
@@ -29,33 +29,25 @@ function getWindDirection(degrees: number): string {
   return directions[index % 16];
 }
 
-const getWeatherIcon = (condition: string, isDay: boolean = true, size: "sm" | "md" | "lg" = "md") => {
-  const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-20 h-20"
-  };
-
-  const iconClass = sizeClasses[size];
-
+const getWeatherIcon = (condition: string, isDay: boolean = true) => {
   switch (condition.toLowerCase()) {
     case 'clear':
-      return isDay ? <WiDaySunny className={iconClass} /> : <WiNightClear className={iconClass} />;
+      return isDay ? <WiDaySunny /> : <WiNightClear />;
     case 'clouds':
-      return isDay ? <WiDayCloudy className={iconClass} /> : <WiNightAltCloudy className={iconClass} />;
+      return isDay ? <WiDayCloudy /> : <WiNightAltCloudy />;
     case 'rain':
     case 'drizzle':
-      return <WiRain className={iconClass} />;
+      return <WiRain />;
     case 'snow':
-      return <WiSnow className={iconClass} />;
+      return <WiSnow />;
     case 'thunderstorm':
-      return <WiThunderstorm className={iconClass} />;
+      return <WiThunderstorm />;
     case 'mist':
     case 'fog':
     case 'haze':
-      return <WiFog className={iconClass} />;
+      return <WiFog />;
     default:
-      return <WiCloudy className={iconClass} />;
+      return <WiCloudy />;
   }
 };
 
@@ -101,7 +93,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
             {/* Date and Icon */}
             <div className="col-span-2 flex items-center gap-3">
               <div className="text-gray-600 dark:text-gray-300">
-                {getWeatherIcon(mostFrequentWeather.main, true, "sm")}
+                {getWeatherIcon(mostFrequentWeather.main, true)}
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -221,7 +213,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
               })}
             </p>
             <div className="text-gray-600 dark:text-gray-300">
-              {getWeatherIcon(item.weather[0].main, isDay, "md")}
+              {getWeatherIcon(item.weather[0].main, isDay)}
             </div>
           </div>
           
