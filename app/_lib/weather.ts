@@ -101,7 +101,6 @@ export async function getWeatherByCity(cityName: string, countryCode?: string): 
     const data = await response.json();
     return weatherSchema.parse(data);
   } catch (error) {
-    console.error('Failed to fetch weather data:', error);
     throw new Error('Failed to fetch weather data');
   }
 }
@@ -137,7 +136,6 @@ export async function getForecastByCity(cityName: string, countryCode?: string):
     const data = await response.json();
     return forecastSchema.parse(data);
   } catch (error) {
-    console.error('Failed to fetch forecast data:', error);
     throw new Error('Failed to fetch forecast data');
   }
 } 

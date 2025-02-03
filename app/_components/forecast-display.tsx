@@ -17,6 +17,20 @@ import {
   WiNightAltCloudy,
 } from 'react-icons/wi';
 
+interface HourlyForecast {
+  time: string;
+  temp: number;
+  condition: string;
+  description: string;
+}
+
+interface DailyForecast {
+  day: string;
+  temp: number;
+  condition: string;
+  description: string;
+}
+
 interface ForecastDisplayProps {
   city: {
     name: string;
@@ -62,7 +76,6 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
         setForecast(data);
       } catch (err) {
         setError('Failed to load forecast data');
-        console.error('Forecast fetch error:', err);
       } finally {
         setLoading(false);
       }
