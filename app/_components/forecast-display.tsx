@@ -29,25 +29,25 @@ function getWindDirection(degrees: number): string {
   return directions[index % 16];
 }
 
-const getWeatherIcon = (condition: string, isDay: boolean = true) => {
+const getWeatherIcon = (condition: string, isDay: boolean = true, className: string = "w-12 h-12") => {
   switch (condition.toLowerCase()) {
     case 'clear':
-      return isDay ? <WiDaySunny /> : <WiNightClear />;
+      return isDay ? <WiDaySunny className={className} /> : <WiNightClear className={className} />;
     case 'clouds':
-      return isDay ? <WiDayCloudy /> : <WiNightAltCloudy />;
+      return isDay ? <WiDayCloudy className={className} /> : <WiNightAltCloudy className={className} />;
     case 'rain':
     case 'drizzle':
-      return <WiRain />;
+      return <WiRain className={className} />;
     case 'snow':
-      return <WiSnow />;
+      return <WiSnow className={className} />;
     case 'thunderstorm':
-      return <WiThunderstorm />;
+      return <WiThunderstorm className={className} />;
     case 'mist':
     case 'fog':
     case 'haze':
-      return <WiFog />;
+      return <WiFog className={className} />;
     default:
-      return <WiCloudy />;
+      return <WiCloudy className={className} />;
   }
 };
 
@@ -93,7 +93,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
             {/* Date and Icon */}
             <div className="col-span-2 flex items-center gap-3">
               <div className="text-gray-600 dark:text-gray-300">
-                {getWeatherIcon(mostFrequentWeather.main, true)}
+                {getWeatherIcon(mostFrequentWeather.main, true, "w-12 h-12")}
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -213,7 +213,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
               })}
             </p>
             <div className="text-gray-600 dark:text-gray-300">
-              {getWeatherIcon(item.weather[0].main, isDay)}
+              {getWeatherIcon(item.weather[0].main, isDay, "w-12 h-12")}
             </div>
           </div>
           

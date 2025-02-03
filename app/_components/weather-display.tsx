@@ -40,25 +40,25 @@ const HOUR_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
   hour12: true,
 };
 
-const getWeatherIcon = (condition: string, isDay: boolean = true) => {
+const getWeatherIcon = (condition: string, isDay: boolean = true, size: string = "w-6 h-6") => {
   switch (condition.toLowerCase()) {
     case 'clear':
-      return isDay ? <WiDaySunny /> : <WiNightClear />;
+      return isDay ? <WiDaySunny className={size} /> : <WiNightClear className={size} />;
     case 'clouds':
-      return isDay ? <WiDayCloudy /> : <WiNightAltCloudy />;
+      return isDay ? <WiDayCloudy className={size} /> : <WiNightAltCloudy className={size} />;
     case 'rain':
     case 'drizzle':
-      return <WiRain />;
+      return <WiRain className={size} />;
     case 'snow':
-      return <WiSnow />;
+      return <WiSnow className={size} />;
     case 'thunderstorm':
-      return <WiThunderstorm />;
+      return <WiThunderstorm className={size} />;
     case 'mist':
     case 'fog':
     case 'haze':
-      return <WiFog />;
+      return <WiFog className={size} />;
     default:
-      return <WiCloudy />;
+      return <WiCloudy className={size} />;
   }
 };
 
@@ -147,7 +147,7 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
       </div>
       <div className="flex flex-col items-center mb-8">
         <div className="text-gray-600 dark:text-gray-300 mb-4">
-          {getWeatherIcon(weather.weather[0].main, isDay)}
+          {getWeatherIcon(weather.weather[0].main, isDay, "w-24 h-24")}
         </div>
         <p className="text-6xl font-bold mb-4 text-gray-900 dark:text-white">
           {Math.round(convertTemp(weather.main.temp))}°{unit}
