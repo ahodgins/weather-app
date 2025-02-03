@@ -70,16 +70,12 @@ export type WeatherData = z.infer<typeof weatherSchema>;
 export type ForecastData = z.infer<typeof forecastSchema>;
 export type DailyForecast = z.infer<typeof forecastSchema>['list'][number];
 
-// Constants
-const API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
-const UNITS = 'metric';
-
 /**
  * Fetches current weather data for a given city
  * @param cityName - Name of the city
  * @param countryCode - Country code of the city
  * @returns Promise containing weather data
- * @throws Error if the API request fails or returns invalid data
+ * @throws Error if the API request fails
  */
 export async function getWeatherByCity(cityName: string, countryCode?: string): Promise<WeatherData> {
   if (!process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY) {
@@ -115,7 +111,7 @@ export async function getWeatherByCity(cityName: string, countryCode?: string): 
  * @param cityName - Name of the city
  * @param countryCode - Country code of the city
  * @returns Promise containing forecast data
- * @throws Error if the API request fails or returns invalid data
+ * @throws Error if the API request fails
  */
 export async function getForecastByCity(cityName: string, countryCode?: string): Promise<ForecastData> {
   if (!process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY) {
