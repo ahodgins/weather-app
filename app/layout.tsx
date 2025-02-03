@@ -19,11 +19,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
+      <head>
+        {/* Prevent flash of light mode */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.add('dark');
+              }
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

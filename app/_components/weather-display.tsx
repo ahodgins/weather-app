@@ -22,6 +22,7 @@ import {
 } from 'react-icons/wi';
 import { useTemperature } from '@/app/_contexts/temperature-context';
 import { TemperatureToggle } from './temperature-toggle';
+import { WeatherAnimation } from './weather-animation';
 
 interface WeatherCardProps {
   icon: React.ReactNode;
@@ -31,7 +32,12 @@ interface WeatherCardProps {
 }
 
 interface WeatherDisplayProps {
-  city: string;
+  city: {
+    name: string;
+    state?: string;
+    country: string;
+  };
+  onLoaded?: () => void;
 }
 
 const HOUR_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
@@ -75,7 +81,7 @@ const WeatherCard = ({ icon, title, value, subValue }: WeatherCardProps) => (
   </div>
 );
 
-export function WeatherDisplay({ city }: WeatherDisplayProps) {
+export function WeatherDisplay({ city, onLoaded }: WeatherDisplayProps) {
   const { convertTemp, unit } = useTemperature();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,14 +96,16 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
       try {
         setLoading(true);
         setError(null);
-        const data = await getWeatherByCity(city);
+        const data = await getWeatherByCity(city.name, city.country);
         if (mounted) {
           setWeather(data);
+          onLoaded?.();
         }
       } catch (err) {
         if (mounted) {
           setError('Failed to load weather data');
           console.error('Weather fetch error:', err);
+          onLoaded?.();
         }
       } finally {
         if (mounted) {
@@ -111,7 +119,7 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
     return () => {
       mounted = false;
     };
-  }, [city]);
+  }, [city, onLoaded]);
 
   if (loading) {
     return (
@@ -138,10 +146,11 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
   const isDay = hour >= 6 && hour < 18;
 
   return (
-    <div className="p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 hover:shadow-2xl transition-all duration-300">
+    <div className="relative p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 hover:shadow-2xl transition-all duration-300">
+      <WeatherAnimation condition={weather.weather[0].description} />
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-          {weather.name}
+          {[city.name, city.state, city.country].filter(Boolean).join(', ')}
         </h2>
         <TemperatureToggle />
       </div>

@@ -10,13 +10,19 @@ import { TemperatureProvider } from '@/app/_contexts/temperature-context';
 
 type ForecastView = 'hourly' | '3day' | '5day';
 
+interface Location {
+  name: string;
+  state?: string;
+  country: string;
+}
+
 export default function Home() {
-  const [city, setCity] = useState('');
+  const [location, setLocation] = useState<Location | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [forecastView, setForecastView] = useState<ForecastView>('hourly');
 
-  const handleSearch = (searchCity: string) => {
-    setCity(searchCity);
+  const handleSearch = (searchLocation: Location) => {
+    setLocation(searchLocation);
     setIsSearching(true);
   };
 
@@ -32,15 +38,15 @@ export default function Home() {
             Get real-time weather updates and forecasts for any city worldwide
           </p>
           <SearchBox onSearch={handleSearch} />
-          {isSearching && (
+          {isSearching && location && (
             <div className="space-y-8 mt-12">
-              <WeatherDisplay city={city} />
+              <WeatherDisplay city={location} />
               <ForecastSelector 
                 onSelect={setForecastView} 
                 currentView={forecastView} 
               />
               <ForecastDisplay 
-                city={city} 
+                city={location}
                 view={forecastView}
               />
             </div>

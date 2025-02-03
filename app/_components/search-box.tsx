@@ -3,30 +3,27 @@
 import { useState, useEffect, useRef } from 'react';
 import { getCitySuggestions } from '@/app/_lib/cities';
 
-interface SearchBoxProps {
-  onSearch: (city: string) => void;
+interface Location {
+  name: string;
+  state?: string;
+  country: string;
 }
 
-export function SearchBox({ onSearch }: SearchBoxProps) {
+interface SearchBoxProps {
+  onSearch: (location: Location) => void;
+  disabled?: boolean;
+}
+
+export function SearchBox({ onSearch, disabled }: SearchBoxProps) {
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<Array<{name: string; country: string; state?: string}>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (input.length >= 2) {
+      if (input.length >= 2 && !disabled) {
         const cities = await getCitySuggestions(input);
         setSuggestions(cities);
         setShowSuggestions(true);
@@ -38,55 +35,72 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
 
     const debounceTimer = setTimeout(fetchSuggestions, 100);
     return () => clearTimeout(debounceTimer);
-  }, [input]);
+  }, [input, disabled]);
+
+  const handleSuggestionClick = (location: Location) => {
+    setShowSuggestions(false);
+    setSuggestions([]);
+    
+    const displayName = [
+      location.name,
+      location.state,
+      location.country
+    ].filter(Boolean).join(', ');
+    
+    setInput(displayName);
+    
+    if (inputRef.current) {
+      inputRef.current.blur();
+    }
+    onSearch(location);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      onSearch(input.trim());
+      onSearch({ name: input.trim(), country: '' });
       setShowSuggestions(false);
+      inputRef.current?.blur();
     }
-  };
-
-  const handleSuggestionClick = (cityName: string) => {
-    // First hide suggestions and clear the array
-    setShowSuggestions(false);
-    setSuggestions([]);
-    // Then update input and trigger search
-    setInput(cityName);
-    onSearch(cityName);
   };
 
   return (
     <div ref={searchContainerRef} className="relative">
-      <form onSubmit={handleSubmit} 
+      <form 
+        onSubmit={handleSubmit}
         className="flex gap-2 p-3 bg-white dark:bg-gray-900 rounded-3xl 
                  shadow-xl border border-gray-100 dark:border-gray-800
-                 hover:shadow-2xl transition-all duration-300">
+                 hover:shadow-2xl transition-all duration-300"
+      >
         <input
+          ref={inputRef}
           type="text"
           value={input}
+          disabled={disabled}
           onChange={(e) => setInput(e.target.value)}
           onBlur={() => {
-            // Use setTimeout to allow click events to fire first
             setTimeout(() => {
-              setShowSuggestions(false);
-              setSuggestions([]);
-            }, 200);
+              if (document.activeElement !== inputRef.current) {
+                setShowSuggestions(false);
+              }
+            }, 150);
           }}
           placeholder="Enter city name..."
           className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 
                    border border-gray-100 dark:border-gray-700
                    focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700
                    text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500
-                   transition-all duration-200"
+                   transition-all duration-200
+                   disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <button
           type="submit"
+          disabled={disabled}
           className="px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 
                    font-medium rounded-xl transition-all duration-200
                    hover:bg-gray-800 dark:hover:bg-gray-100
-                   focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-700"
+                   focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-700
+                   disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Search
         </button>
@@ -94,11 +108,12 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
 
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute w-full mt-2 py-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg 
-                        border border-gray-200 dark:border-gray-800 z-10">
+                      border border-gray-200 dark:border-gray-800 z-10">
           {suggestions.map((city, index) => (
             <button
               key={`${city.name}-${city.country}-${index}`}
-              onClick={() => handleSuggestionClick(city.name)}
+              onClick={() => handleSuggestionClick(city)}
+              type="button"
               className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-800
                        text-gray-900 dark:text-gray-100 transition-colors duration-150"
             >

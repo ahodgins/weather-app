@@ -75,64 +75,50 @@ const UNITS = 'metric';
 
 /**
  * Fetches current weather data for a given city
- * @param city - Name of the city
+ * @param cityName - Name of the city
+ * @param countryCode - Country code of the city
  * @returns Promise containing weather data
  * @throws Error if the API request fails or returns invalid data
  */
-export async function getWeatherByCity(city: string): Promise<WeatherData> {
-  if (!process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY) {
-    throw new Error('OpenWeather API key is not configured');
-  }
+export async function getWeatherByCity(cityName: string, countryCode?: string): Promise<WeatherData> {
+  const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+  const baseUrl = process.env.NEXT_PUBLIC_WEATHER_BASE_URL;
+  
+  // Add country code to query if provided
+  const query = countryCode ? `${cityName},${countryCode}` : cityName;
+  
+  const response = await fetch(
+    `${baseUrl}/weather?q=${query}&units=metric&appid=${apiKey}`
+  );
 
-  const params = new URLSearchParams({
-    q: city,
-    units: UNITS,
-    appid: process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY,
-  });
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/weather?${params}`);
-    
-    if (!response.ok) {
-      throw new Error(`Weather API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return WeatherSchema.parse(data);
-  } catch (error) {
-    console.error('Failed to fetch weather data:', error);
+  if (!response.ok) {
     throw new Error('Failed to fetch weather data');
   }
+
+  return response.json();
 }
 
 /**
  * Fetches forecast data for a given city
- * @param city - Name of the city
+ * @param cityName - Name of the city
+ * @param countryCode - Country code of the city
  * @returns Promise containing forecast data
  * @throws Error if the API request fails or returns invalid data
  */
-export async function getForecastByCity(city: string): Promise<ForecastData> {
-  if (!process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY) {
-    throw new Error('OpenWeather API key is not configured');
-  }
+export async function getForecastByCity(cityName: string, countryCode?: string): Promise<ForecastData> {
+  const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+  const baseUrl = process.env.NEXT_PUBLIC_WEATHER_BASE_URL;
+  
+  // Add country code to query if provided
+  const query = countryCode ? `${cityName},${countryCode}` : cityName;
 
-  const params = new URLSearchParams({
-    q: city,
-    units: UNITS,
-    appid: process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY,
-  });
+  const response = await fetch(
+    `${baseUrl}/forecast?q=${query}&units=metric&appid=${apiKey}`
+  );
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/forecast?${params}`);
-    
-    if (!response.ok) {
-      throw new Error(`Forecast API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return ForecastSchema.parse(data);
-  } catch (error) {
-    console.error('Failed to fetch forecast data:', error);
+  if (!response.ok) {
     throw new Error('Failed to fetch forecast data');
   }
+
+  return response.json();
 } 

@@ -18,7 +18,10 @@ import { LoadingSpinner } from '@/app/_components/ui/loading-spinner';
 import { ErrorDisplay } from '@/app/_components/ui/error-display';
 
 interface ForecastDisplayProps {
-  city: string;
+  city: {
+    name: string;
+    country: string;
+  };
   view: 'hourly' | '3day' | '5day';
 }
 
@@ -163,7 +166,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
       try {
         setLoading(true);
         setError(null);
-        const data = await getForecastByCity(city);
+        const data = await getForecastByCity(city.name, city.country);
         if (mounted) {
           setForecast(data);
         }
