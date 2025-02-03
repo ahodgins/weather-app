@@ -59,17 +59,8 @@ const getWeatherIcon = (condition: string, isDay: boolean = true, size: "sm" | "
   }
 };
 
-interface ForecastCardProps {
-  forecast: ForecastData;
-  unit: string;
-}
-
-const ForecastCard = memo(({ forecast, unit }: ForecastCardProps) => {
-  // Component logic here
-});
-
 export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
-  const { convertTemp, unit } = useTemperature();
+  const { convertTemp } = useTemperature();
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -169,7 +160,7 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
           </div>
         );
       });
-  }, [forecast, view, unit, convertTemp]);
+  }, [forecast, view, convertTemp]);
 
   useEffect(() => {
     let mounted = true;
@@ -239,13 +230,13 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
           </p>
 
           <p className="text-xl font-semibold text-gray-900 dark:text-white mb-3 text-center">
-            {Math.round(convertTemp(item.main.temp))}°{unit}
+            {Math.round(convertTemp(item.main.temp))}°
           </p>
 
           <div className="space-y-1 text-sm">
             <p className="text-gray-500 dark:text-gray-400 flex justify-between">
               <span>Feels like</span>
-              <span>{Math.round(convertTemp(item.main.feels_like))}°{unit}</span>
+              <span>{Math.round(convertTemp(item.main.feels_like))}°</span>
             </p>
             <p className="text-gray-500 dark:text-gray-400 flex justify-between">
               <span>Precip</span>
@@ -320,4 +311,6 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
       </div>
     </div>
   );
-} 
+}
+
+ForecastDisplay.displayName = 'ForecastDisplay'; 

@@ -40,39 +40,25 @@ const HOUR_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
   hour12: true,
 };
 
-const ICON_SIZES = {
-  sm: "w-8 h-8",
-  md: "w-12 h-12",
-  lg: "w-20 h-20",
-} as const;
-
-const getWeatherIcon = (condition: string, isDay: boolean = true, size: "sm" | "md" | "lg" = "md") => {
-  const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-20 h-20"
-  };
-
-  const iconClass = sizeClasses[size];
-
+const getWeatherIcon = (condition: string, isDay: boolean = true) => {
   switch (condition.toLowerCase()) {
     case 'clear':
-      return isDay ? <WiDaySunny className={iconClass} /> : <WiNightClear className={iconClass} />;
+      return isDay ? <WiDaySunny /> : <WiNightClear />;
     case 'clouds':
-      return isDay ? <WiDayCloudy className={iconClass} /> : <WiNightAltCloudy className={iconClass} />;
+      return isDay ? <WiDayCloudy /> : <WiNightAltCloudy />;
     case 'rain':
     case 'drizzle':
-      return <WiRain className={iconClass} />;
+      return <WiRain />;
     case 'snow':
-      return <WiSnow className={iconClass} />;
+      return <WiSnow />;
     case 'thunderstorm':
-      return <WiThunderstorm className={iconClass} />;
+      return <WiThunderstorm />;
     case 'mist':
     case 'fog':
     case 'haze':
-      return <WiFog className={iconClass} />;
+      return <WiFog />;
     default:
-      return <WiCloudy className={iconClass} />;
+      return <WiCloudy />;
   }
 };
 
@@ -161,7 +147,7 @@ export function WeatherDisplay({ city }: WeatherDisplayProps) {
       </div>
       <div className="flex flex-col items-center mb-8">
         <div className="text-gray-600 dark:text-gray-300 mb-4">
-          {getWeatherIcon(weather.weather[0].main, isDay, "lg")}
+          {getWeatherIcon(weather.weather[0].main, isDay)}
         </div>
         <p className="text-6xl font-bold mb-4 text-gray-900 dark:text-white">
           {Math.round(convertTemp(weather.main.temp))}°{unit}

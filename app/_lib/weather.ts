@@ -69,19 +69,6 @@ export type WeatherData = z.infer<typeof WeatherSchema>;
 export type ForecastData = z.infer<typeof ForecastSchema>;
 export type DailyForecast = z.infer<typeof ForecastSchema>['list'][number];
 
-class WeatherApiError extends Error {
-  status?: number;
-  
-  constructor(message: string, status?: number) {
-    super(message);
-    // Restore prototype chain
-    Object.setPrototypeOf(this, WeatherApiError.prototype);
-    
-    this.name = 'WeatherApiError';
-    this.status = status;
-  }
-}
-
 // Constants
 const API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 const UNITS = 'metric';
