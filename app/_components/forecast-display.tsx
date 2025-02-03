@@ -119,11 +119,12 @@ export function ForecastDisplay({ city, view }: ForecastDisplayProps) {
   };
 
   const getPrecipitation = (item: ForecastItemData): string | undefined => {
-    const rain = item.rain?.['1h'] || item.rain?.['3h'];
-    const snow = item.snow?.['1h'] || item.snow?.['3h'];
+    const rain = item.rain?.['1h'] || item.rain?.['3h'] || 0;
+    const snow = item.snow?.['1h'] || item.snow?.['3h'] || 0;
     
-    if (rain || snow) {
-      const amount = (rain || snow) / 10; // Convert to cm
+    const amount = (rain + snow) / 10; // Convert to cm
+    
+    if (amount > 0) {
       return `${amount.toFixed(2)} cm`;
     }
     return undefined;
