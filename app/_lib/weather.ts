@@ -138,4 +138,4 @@ export async function getForecastByCity(cityName: string, countryCode?: string):
   } catch {
     throw new Error('Failed to fetch forecast data');
   }
-} 
+}
